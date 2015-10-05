@@ -1,0 +1,12 @@
+{
+    "require": {
+        "novutec/whoisparser": "dev-master",
+        "wp-cli/php-cli-tools": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Joelvardy\\": "libraries/"
+        }
+    },
+    "minimum-stability": "dev"
+}
