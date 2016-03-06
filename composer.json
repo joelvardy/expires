@@ -1,7 +1,9 @@
 {
     "require": {
-        "novutec/whoisparser": "dev-master",
-        "wp-cli/php-cli-tools": "dev-master"
+        "novutec/whoisparser": "^3.2.5",
+        "daniel-zahariev/php-aws-ses": "^0.8.6",
+        "symfony/yaml": "^3.0",
+        "guzzlehttp/guzzle": "^6.1"
     },
     "autoload": {
         "psr-4": {

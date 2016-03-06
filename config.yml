@@ -1,0 +1,24 @@
+---
+emailTo: info@joelvardy.com
+emailFrom: info@joelvardy.com
+googleSafeBrowsingKey: CHANGEME
+amazonSesAccessKey: CHANGEME
+amazonSesSecretKey: CHANGME
+
+tests:
+    - fqdn: joelvardy.com
+      expires: true
+      certificate: true
+      safeBrowsing: true
+    - fqdn: demo.joelvardy.com
+      expires: false
+      certificate: true
+      safeBrowsing: true
+    - fqdn: photos.joelvardy.com
+      expires: false
+      certificate: true
+      safeBrowsing: true
+    - fqdn: joelgonewild.com
+      expires: true
+      certificate: true
+      safeBrowsing: true

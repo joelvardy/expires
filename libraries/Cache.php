@@ -23,15 +23,13 @@ class Cache
     {
 
         if (!file_exists($this->cacheKey($domain))) {
-            // Not found in cache
-            return false;
+            return false; // Not found in cache
         }
 
         $details = json_decode(file_get_contents($this->cacheKey($domain)));
 
         if (($details->checked + $cacheValidityTime) < time()) {
-            // Cache is out of date
-            return false;
+            return false; // Cache is out of date
         }
 
         return $details;

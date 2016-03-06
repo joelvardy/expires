@@ -44,8 +44,7 @@ class Whois extends Cache
         $data = $this->parser->lookup($domain);
 
         if (!isset($data->created) || !isset($data->changed) || !isset($data->expires)) {
-            // Could not load whos data
-            return false;
+            throw new \Exception('Could not load whois data');
         }
 
         $details = (object)[

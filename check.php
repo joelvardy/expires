@@ -1,49 +1,55 @@
 <?php
 
-$domains = require(__DIR__ . '/config.php');
+require(__DIR__ . '/vendor/autoload.php');
+
+date_default_timezone_set('Europe/London');
 
 $whois = new Joelvardy\Whois(__DIR__ . '/cache');
 $certificate = new Joelvardy\Certificate(__DIR__ . '/cache');
+$safeBrowsing = new Joelvardy\SafeBrowsing(__DIR__ . '/cache');
+$email = new Joelvardy\Email();
 
-$table = new \cli\Table();
-$table->setHeaders(['Domain', 'Domain Expiry', 'Certificate Expiry']);
+$testResults = [];
+foreach (\Joelvardy\Config::get('tests') as $test) {
 
-$formatColour = function ($expires) {
+    $testResults[$test->fqdn] = (object) [];
 
-    $oneMonth = new DateTime();
-    $oneMonth->modify('+1 month');
-
-    $oneWeek = new DateTime();
-    $oneWeek->modify('+1 week');
-
-    return ($expires < $oneWeek ? '%r' : ($expires < $oneMonth ? '%y' : '%g'));
-
-};
-
-print "Checking domains:\n";
-Joelvardy\Progress::bar(1, count($domains));
-
-foreach ($domains as $i => $domain) {
-
-    if ($domainDetails = $whois->check($domain->domain)) {
-        $domainExpiresText = $formatColour($domainDetails->domain->expires) . $domainDetails->domain->expires->format('jS F Y') . '%n';
-    } else {
-        $domainExpiresText = '%rUnable to load whois data%n';
-    }
-
-    if (isset($domain->certificate) && $domain->certificate) {
-        if ($certificateDetails = $certificate->check($domain->domain)) {
-            $certificateExpiresText = $formatColour($certificateDetails->domain->expires) . $certificateDetails->domain->expires->format('jS F Y') . '%n';
-        } else {
-            $certificateExpiresText = '%rUnable to load certificate data%n';
+    // Whois expiry
+    if (isset($test->expires) && $test->expires) {
+        try {
+            $whoisDetails = $whois->check($test->fqdn);
+            $testResults[$test->fqdn]->domainExpiry = $whoisDetails->domain->expires;
+        } catch (\Exception $e) {
+            $testResults[$test->fqdn]->domainExpiry = 'Unable to test';
         }
     } else {
-        $certificateExpiresText = 'N/A';
+        $testResults[$test->fqdn]->domainExpiry = 'N/A';
     }
 
-    $table->addRow([$domain->domain, $domainExpiresText, $certificateExpiresText]);
-    Joelvardy\Progress::bar(($i + 1), count($domains));
+    // Certificate expiry
+    if (isset($test->certificate) && $test->certificate) {
+        try {
+            $certificateDetails = $certificate->check($test->fqdn);
+            $testResults[$test->fqdn]->certificateExpiry = $certificateDetails->domain->expires;
+        } catch (\Exception $e) {
+            $testResults[$test->fqdn]->certificateExpiry = 'Unable to test';
+        }
+    } else {
+        $testResults[$test->fqdn]->certificateExpiry = 'N/A';
+    }
+
+    // Safe browsing lookup
+    if (isset($test->safeBrowsing) && $test->safeBrowsing) {
+        try {
+            $safeBrowsingDetails = $safeBrowsing->check($test->fqdn);
+            $testResults[$test->fqdn]->safeBrowsingResult = $safeBrowsingDetails->domain;
+        } catch (\Exception $e) {
+            $testResults[$test->fqdn]->safeBrowsingResult = 'Unable to test';
+        }
+    } else {
+        $testResults[$test->fqdn]->safeBrowsingResult = 'N/A';
+    }
 
 }
 
-$table->display();
+$email->send('Domain Status', 'status.php', ['results' => $testResults]);

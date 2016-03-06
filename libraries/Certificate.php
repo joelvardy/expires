@@ -39,8 +39,7 @@ class Certificate extends Cache
         unlink($certFilepath); // Remove downloaded certificate
 
         if (!isset($data['validFrom_time_t']) || !isset($data['validTo_time_t'])) {
-            // Could not load certificate
-            return false;
+            throw new \Exception('Could not load certificate');
         }
 
         $details = (object)[
